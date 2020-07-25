@@ -1,17 +1,33 @@
 <html>
 <script src='https://d3js.org/d3.v5.min.js'></script>
-<style>
-    circle {
-        fill: lightblue;
-        stroke: black;
-    }
-</style>
+
+<head>
+    <title>Narrative Visualization Project</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
 
 <body onload='init()'>
-    Hello World!</P>
-    <svg width=300 height=300>
-    </svg>
-    <script>
+    <!-- Header -->
+    <div class="header">
+        <h1>My Project</h1>
+        <p>A Growing Problem</p>
+    </div>
+    <div class="row">
+        <div class="side">
+            <P>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem, labore nam hic perspiciatis tempora
+                autem
+                ipsam odit voluptatibus molestias corporis unde, cumque quos iusto saepe ab, velit repellendus alias
+                eius.
+            </P>
+        </div>
+        <div class="main">
+            <svg width=300 height=300>
+            </svg>
+        </div>
+    </div>
+<script>
         async function init() {
             margin = 50
             sx = d3.scaleLog().domain([10, 150]).range([0, 200])
