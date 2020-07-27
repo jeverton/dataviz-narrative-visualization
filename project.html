@@ -14,11 +14,14 @@
         <h1>My Project</h1>
         <p>A Growing Problem</p>
     </div>
+    <!-- Navigation -->
     <div class="navbar">
-        <button id="previousButton" onclick="previous(this)" disabled = true>Previous</button>
+        <button id="previousButton" onclick="previous(this)" disabled=true>Previous</button>
         <button id="nextButton" onclick="next(this)">Next</button>
     </div>
+    <!-- Content -->
     <div class="row">
+        <!-- Narrative -->
         <div class="side" id="s0">
             <P>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem, labore nam hic perspiciatis tempora
                 autem
@@ -27,19 +30,21 @@
             </P>
         </div>
         <div class="side" id="s1">
-            <P>Quis nesciunt voluptatem illum iure fuga consequuntur eum laudantium voluptatum magni, nemo, voluptate ea soluta unde officia? Quis blanditiis corporis nostrum consequuntur.
+            <P>Quis nesciunt voluptatem illum iure fuga consequuntur eum laudantium voluptatum magni, nemo, voluptate ea
+                soluta unde officia? Quis blanditiis corporis nostrum consequuntur.
             </P>
         </div>
         <div class="side" id="s2">
             <P>Aliquid, a accusamus facere sunt obcaecati quidem nesciunt rerum, porro, similique nisi dolorum!
             </P>
         </div>
+        <!-- Plots -->
         <div class="main">
             <svg width=300 height=300>
             </svg>
         </div>
     </div>
-<script>
+    <script>
         var scene = 0;
         const numScenes = 3;
 
@@ -71,10 +76,10 @@
                     .tickFormat(d3.format("~s")));
         }
         function changeScene(s) {
-            var x = document.getElementById("s"+scene);
+            var x = document.getElementById("s" + scene);
             if (x != null) x.style.display = "none";
             scene = s
-            x = document.getElementById("s"+scene);
+            x = document.getElementById("s" + scene);
             if (x != null) x.style.display = "block";
         }
         function next(b) {
