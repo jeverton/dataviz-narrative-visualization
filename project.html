@@ -39,7 +39,7 @@
             </P>
         </div>
         <!-- Plots -->
-        <div class="main">
+        <div class="main" id="my_dataviz">
             <svg width=300 height=300>
             </svg>
         </div>
@@ -47,33 +47,73 @@
     <script>
         var scene = 0;
         const numScenes = 3;
+        // set the dimensions and margins of the graph
+        var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+            width = 460 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
 
         async function init() {
             var x = document.getElementById("s0")
             x.style.display = "block";
             margin = 50
-            sx = d3.scaleLog().domain([10, 150]).range([0, 200])
-            sy = d3.scaleLog().domain([10, 150]).range([200, 0])
-            const data = await d3.csv('https://flunky.github.io/cars2017.csv');
-            d3.select('svg')
-                .append('g').attr('transform', 'translate(' + margin + ',' + margin + ')')
-                .selectAll('circle').data(data).enter()
-                .append('circle')
-                .attr('cx', function (d) { return sx(+d.AverageCityMPG); })
-                .attr('cy', function (d) { return sy(+d.AverageHighwayMPG); })
-                .attr('r', function (d) { return (2 + parseInt(d.EngineCylinders)); })
+            // get the data
+            // const data = await d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv")
+            const data = await d3.csv("./vehicles_clean.csv", function (d) {
+                // console.log(+d.year);
+                return {
+                    year: +d.year,
+                    make: d.make,
+                    trany: d.trany,
+                    model: d.model,
+                    city: +d.city08,
+                    highway: +d.highway08
+                };
+            });
+            data_1985 = data.filter(function (row) { return row.year == 1985 })
 
-            d3.select("svg").append("g")
-                .attr("transform", "translate(" + margin + "," + margin + ")")
-                .call(d3.axisLeft(sy)
-                    .tickValues([10, 20, 50, 100])
-                    .tickFormat(d3.format("~s")));
+            // X axis: scale and draw:
+            var x = d3.scaleLinear()
+                .domain([0, d3.max(data_1985, function (d) { return d.city })])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                .range([0, width]);
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
 
-            d3.select('svg').append('g')
-                .attr("transform", "translate(" + margin + "," + (margin + 200) + ")")
-                .call(d3.axisBottom(sx)
-                    .tickValues([10, 20, 50, 100])
-                    .tickFormat(d3.format("~s")));
+            // set the parameters for the histogram
+            var histogram = d3.histogram()
+                .value(function (d) { return d.city; })   // I need to give the vector of value
+                .domain(x.domain())  // then the domain of the graphic
+                .thresholds(x.ticks(70)); // then the numbers of bins
+
+            // And apply this function to data to get the bins
+            var bins = histogram(data_1985);
+
+            // Y axis: scale and draw:
+            var y = d3.scaleLinear()
+                .range([height, 0]);
+            y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            // append the bar rectangles to the svg element
+            svg.selectAll("rect")
+                .data(bins)
+                .enter()
+                .append("rect")
+                .attr("x", 1)
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                .attr("height", function (d) { return height - y(d.length); })
+                .style("fill", "#69b3a2");
         }
         function changeScene(s) {
             var x = document.getElementById("s" + scene);
