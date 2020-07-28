@@ -11,8 +11,8 @@
 <body onload='init()'>
     <!-- Header -->
     <div class="header">
-        <h1>My Project</h1>
-        <p>A Growing Problem</p>
+        <h1>Automobile Fuel Efficiency</h1>
+        <p>Guzzling less over time</p>
     </div>
     <!-- Navigation -->
     <div class="navbar">
@@ -47,6 +47,10 @@
     <script>
         var scene = 0;
         const numScenes = 3;
+        var data_by_year = {};
+        for (i = 1984; i <= 2021; i++) {
+            data_by_year[i.toString()] = [];
+        }
         // set the dimensions and margins of the graph
         var margin = { top: 10, right: 30, bottom: 30, left: 40 },
             width = 460 - margin.left - margin.right,
@@ -69,7 +73,7 @@
             // const data = await d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv")
             const data = await d3.csv("./vehicles_clean.csv", function (d) {
                 // console.log(+d.year);
-                return {
+                curRow = {
                     year: +d.year,
                     make: d.make,
                     trany: d.trany,
@@ -77,12 +81,14 @@
                     city: +d.city08,
                     highway: +d.highway08
                 };
+                data_by_year[d.year].push(curRow);
+                return curRow;
             });
-            data_1985 = data.filter(function (row) { return row.year == 1985 })
+            data_curyear = data_by_year["1985"];
 
             // X axis: scale and draw:
             var x = d3.scaleLinear()
-                .domain([0, d3.max(data_1985, function (d) { return d.city })])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                .domain([0, d3.max(data_curyear, function (d) { return d.city })])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                 .range([0, width]);
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
@@ -95,7 +101,7 @@
                 .thresholds(x.ticks(70)); // then the numbers of bins
 
             // And apply this function to data to get the bins
-            var bins = histogram(data_1985);
+            var bins = histogram(data_curyear);
 
             // Y axis: scale and draw:
             var y = d3.scaleLinear()
