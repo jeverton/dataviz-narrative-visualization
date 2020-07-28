@@ -1,2 +1,4 @@
 *.pdf
 cleaning/*
+.RData
+.Rhistory

@@ -23,25 +23,19 @@
     <div class="row">
         <!-- Narrative -->
         <div class="side" id="s0">
-            <P>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem, labore nam hic perspiciatis tempora
-                autem
-                ipsam odit voluptatibus molestias corporis unde, cumque quos iusto saepe ab, velit repellendus alias
-                eius.
+            <P>Automobiles used to be much less efficient than they are today.
             </P>
         </div>
         <div class="side" id="s1">
-            <P>Quis nesciunt voluptatem illum iure fuga consequuntur eum laudantium voluptatum magni, nemo, voluptate ea
-                soluta unde officia? Quis blanditiis corporis nostrum consequuntur.
+            <P>Look at how this curve shifts over a couple decades.
             </P>
         </div>
         <div class="side" id="s2">
-            <P>Aliquid, a accusamus facere sunt obcaecati quidem nesciunt rerum, porro, similique nisi dolorum!
+            <P>Have a look at other years, and see how certain manufacturers' curves compare.
             </P>
         </div>
         <!-- Plots -->
         <div class="main" id="my_dataviz">
-            <svg width=300 height=300>
-            </svg>
         </div>
     </div>
     <script>
@@ -53,8 +47,8 @@
         }
         // set the dimensions and margins of the graph
         var margin = { top: 10, right: 30, bottom: 30, left: 40 },
-            width = 460 - margin.left - margin.right,
-            height = 400 - margin.top - margin.bottom;
+            width = 640 - margin.left - margin.right,
+            height = 480 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         var svg = d3.select("#my_dataviz")
