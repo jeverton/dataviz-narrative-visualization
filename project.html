@@ -1,5 +1,6 @@
 <html>
 <script src='https://d3js.org/d3.v5.min.js'></script>
+<!-- <script src="https://unpkg.com/d3-simple-slider"></script> -->
 
 <head>
     <title>Narrative Visualization Project</title>
@@ -36,6 +37,7 @@
         </div>
         <!-- Plots -->
         <div class="main" id="my_dataviz">
+            <!-- <input type="range" name="mySlider" id=mySlider min="2" max="40" value="10"> -->
         </div>
     </div>
     <script>
@@ -62,7 +64,6 @@
         async function init() {
             var x = document.getElementById("s0")
             x.style.display = "block";
-            margin = 50
             // get the data
             // const data = await d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv")
             const data = await d3.csv("./vehicles_clean.csv", function (d) {
@@ -78,11 +79,21 @@
                 data_by_year[d.year].push(curRow);
                 return curRow;
             });
-            data_curyear = data_by_year["1985"];
-
+            drawHistogram(data_by_year["1985"]);
+            drawAnnotation(24, "Toyota Corolla 5-spd automatic")
+        }
+        function drawAnnotation(rectNumber, text){
+            var myG = svg.select("g:nth-child("+rectNumber+")");
+            myG.select("rect")
+            .style("stroke","orange").style("stroke-width","3");
+            myG.append("line")
+            .attr("x1","0").attr("y1","0").attr("x2","20").attr("y2","20")
+            .style("stroke","orange").style("stroke-width","3");
+        }
+        function drawHistogram(data) {
             // X axis: scale and draw:
             var x = d3.scaleLinear()
-                .domain([0, d3.max(data_curyear, function (d) { return d.city })])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                .domain([0, 60])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                 .range([0, width]);
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
@@ -95,25 +106,48 @@
                 .thresholds(x.ticks(70)); // then the numbers of bins
 
             // And apply this function to data to get the bins
-            var bins = histogram(data_curyear);
+            var bins = histogram(data);
 
             // Y axis: scale and draw:
             var y = d3.scaleLinear()
                 .range([height, 0]);
-            y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+            y.domain([0, 240]);   // d3.hist has to be called before the Y axis obviously
             svg.append("g")
                 .call(d3.axisLeft(y));
 
             // append the bar rectangles to the svg element
-            svg.selectAll("rect")
+            svg.append("g")
+                .attr("id", "rects")
+            .selectAll("rect")
                 .data(bins)
                 .enter()
+                .append("g")
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 .append("rect")
                 .attr("x", 1)
-                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                // .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
                 .attr("height", function (d) { return height - y(d.length); })
                 .style("fill", "#69b3a2");
+            svg.append("g")
+                .append("text")
+                .attr("x", width - margin.right - 100).attr("y",50)
+                .attr("font-family","sans-serif").attr("font-size",40)
+                .text(data[0].year);
+        }
+
+        function drawPlotX(scene) {
+            switch (scene) {
+                case 0:
+                    drawHistogram(data_by_year["1984"]);
+                    break;
+                case 1:
+                    drawHistogram(data_by_year["1994"]);
+                    break;
+                case 2:
+                    drawHistogram(data_by_year["2020"]);
+                    break;
+            }
         }
         function changeScene(s) {
             var x = document.getElementById("s" + scene);
@@ -123,16 +157,20 @@
             if (x != null) x.style.display = "block";
         }
         function next(b) {
+            //https://www.tutorialsteacher.com/d3js/dom-manipulation-using-d3js
+            svg.html("")
             changeScene(scene + 1)
             b.disabled = scene >= (numScenes - 1);
             document.getElementById("previousButton").disabled = false;
+            drawPlotX(scene)
             console.log("Scene " + scene + ".");
-            console.log(scene >= (numScenes - 1));
         }
         function previous(b) {
+            svg.html("")
             changeScene(scene - 1)
             b.disabled = scene <= 0
             document.getElementById("nextButton").disabled = false;
+            drawPlotX(scene)
             console.log("Scene " + scene + ".");
         }
     </script>
