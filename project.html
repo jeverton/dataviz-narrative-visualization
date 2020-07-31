@@ -79,28 +79,31 @@
                 data_by_year[d.year].push(curRow);
                 return curRow;
             });
-            drawHistogram(data_by_year["1985"]);
-            drawAnnotation(23, 1);
-            drawAnnotation(9, 5);
+            drawPlotX(0);
         }
 
         function drawAnnotation(rectNumber, modelIdx){
             // Each rect is wrapped in a <g/> with transform.  This makes it
             // easier to decorate that rect with an annotation.  Select the g.
-            var myG = svg.select("#rects").select("g:nth-child("+(rectNumber+1)+")")
-            .raise();
             // Then select its rect.
-            myG.select("rect")
-            .attr("class","selected");
+            var myG = svg.select("#rects").selectAll("g")
+            .filter(function(d, i) {
+                // Pick out the <g> of the bar we want to decorate.
+                if (d == undefined || !Array.isArray(d) || d[0] == undefined) return false;
+                return d[0].city == rectNumber;
+            })
+            .raise();
+
+            myG.select("rect").classed("selected",true);
 
             // Draw the annotation with lines.
             myG.append("line")
-            .attr("class","annotation")
+            .classed("annotation", true)
             .attr("x1", d => (x(d.x1) - x(d.x0) - 1) / 2)
             .attr("y1","0").attr("x2","30").attr("y2","-30");
             myG.append("g")
             .attr("transform", d => "translate(30, -30)")
-            .attr("class","annotation");
+            .classed("annotation", true)
             myG = myG.select("g");
             
             // semi-opaque background
@@ -117,7 +120,7 @@
             // multi-line text for the data.
             // https://jarrettmeyer.com/2018/06/05/svg-multiline-text-with-tspan
             myText = myG.append("text")
-            .attr("class","annotation")
+            .classed("annotation", true)
             myText.append("tspan")
             .text(d => d[modelIdx].year + " " + d[modelIdx].make + " " + d[modelIdx].model)
             .attr("x", 0).attr("y",-50);
@@ -128,11 +131,16 @@
             .attr("x", 0).attr("dx",10).attr("dy",22)
             .text(d => "city: " + d[modelIdx].city + "mpg, highway: " + d[modelIdx].highway + "mpg");
         }
-        
-        function drawHistogram(data) {
+
+        function clearAnnotations() {
+            svg.selectAll(".annotation").remove();
+            svg.selectAll(".selected").classed("selected", false);
+        }
+
+        function drawHistogram(data, interactive) {
             // X axis: scale and draw:
             x = d3.scaleLinear()
-                .domain([0, 60])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                .domain([8, 60])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                 .range([0, width]);
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
@@ -163,6 +171,14 @@
                 .append("g")
                 .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 .append("rect")
+                .on("mouseover", function (d, i) {
+                    if (interactive) {
+                        drawAnnotation(15, 3);
+                    }
+                })
+                .on("mouseout", function() {
+                    clearAnnotations();
+                })
                 .attr("x", 1)
                 // .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
@@ -177,13 +193,17 @@
         function drawPlotX(scene) {
             switch (scene) {
                 case 0:
-                    drawHistogram(data_by_year["1984"]);
+                    drawHistogram(data_by_year["1985"]);
+                    drawAnnotation(23, 1);
+                    drawAnnotation(9, 5);
                     break;
                 case 1:
-                    drawHistogram(data_by_year["1994"]);
+                drawHistogram(data_by_year["2005"]);
+                    drawAnnotation(23, 1);
+                    drawAnnotation(9, 5);
                     break;
                 case 2:
-                    drawHistogram(data_by_year["2020"]);
+                    drawHistogram(data_by_year["2020"], true);
                     break;
             }
         }
