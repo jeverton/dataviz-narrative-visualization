@@ -80,19 +80,49 @@
                 return curRow;
             });
             drawHistogram(data_by_year["1985"]);
-            drawAnnotation(24, "Toyota Corolla 5-spd automatic")
+            drawAnnotation(23, 1);
+            drawAnnotation(9, 5);
         }
-        function drawAnnotation(rectNumber, text){
-            var myG = svg.select("g:nth-child("+rectNumber+")");
+
+        function drawAnnotation(rectNumber, modelIdx){
+            var myG = svg.select("#rects").select("g:nth-child("+(rectNumber+1)+")")
+            .raise();
             myG.select("rect")
-            .style("stroke","orange").style("stroke-width","3");
+            .attr("class","selected")
             myG.append("line")
-            .attr("x1","0").attr("y1","0").attr("x2","20").attr("y2","20")
-            .style("stroke","orange").style("stroke-width","3");
+            .attr("class","annotation")
+            .attr("x1", d => (x(d.x1) - x(d.x0) - 1) / 2)
+            .attr("y1","0").attr("x2","30").attr("y2","-30")
+            myG.append("g")
+            .attr("transform", d => "translate(30, -30)")
+            .attr("class","annotation")
+            .append("rect")
+            .style("fill","white")
+            .style("stroke-width",0)
+            .attr("opacity", .5)
+            .attr("y", -60).attr("width", 150).attr("height", 60);
+            myG = myG.select("g")
+
+            myG.append("line")
+            .attr("x1", 0).attr("y1","0").attr("x2","0").attr("y2","-60")
+            myG.append("line")
+            .attr("x1", 0).attr("y1","0").attr("x2","150").attr("y2","0")
+            myText = myG.append("text")
+            .attr("class","annotation")
+            .attr("font-family","sans-serif").attr("font-size",12)
+            myText.append("tspan")
+            .text(d => d[modelIdx].year + " " + d[modelIdx].make + " " + d[modelIdx].model)
+            .attr("x", 0).attr("y",-50);
+            myText.append("tspan")
+            .attr("x", 0).attr("dx",10).attr("dy",22)
+            .text(d => d[modelIdx].trany);
+            myText.append("tspan")
+            .attr("x", 0).attr("dx",10).attr("dy",22)
+            .text(d => "city: " + d[modelIdx].city + "mpg, highway: " + d[modelIdx].highway + "mpg");
         }
         function drawHistogram(data) {
             // X axis: scale and draw:
-            var x = d3.scaleLinear()
+            x = d3.scaleLinear()
                 .domain([0, 60])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
                 .range([0, width]);
             svg.append("g")
@@ -109,7 +139,7 @@
             var bins = histogram(data);
 
             // Y axis: scale and draw:
-            var y = d3.scaleLinear()
+            y = d3.scaleLinear()
                 .range([height, 0]);
             y.domain([0, 240]);   // d3.hist has to be called before the Y axis obviously
             svg.append("g")
@@ -128,7 +158,6 @@
                 // .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
                 .attr("height", function (d) { return height - y(d.length); })
-                .style("fill", "#69b3a2");
             svg.append("g")
                 .append("text")
                 .attr("x", width - margin.right - 100).attr("y",50)
