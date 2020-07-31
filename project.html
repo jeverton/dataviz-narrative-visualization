@@ -85,31 +85,39 @@
         }
 
         function drawAnnotation(rectNumber, modelIdx){
+            // Each rect is wrapped in a <g/> with transform.  This makes it
+            // easier to decorate that rect with an annotation.  Select the g.
             var myG = svg.select("#rects").select("g:nth-child("+(rectNumber+1)+")")
             .raise();
+            // Then select its rect.
             myG.select("rect")
-            .attr("class","selected")
+            .attr("class","selected");
+
+            // Draw the annotation with lines.
             myG.append("line")
             .attr("class","annotation")
             .attr("x1", d => (x(d.x1) - x(d.x0) - 1) / 2)
-            .attr("y1","0").attr("x2","30").attr("y2","-30")
+            .attr("y1","0").attr("x2","30").attr("y2","-30");
             myG.append("g")
             .attr("transform", d => "translate(30, -30)")
-            .attr("class","annotation")
-            .append("rect")
-            .style("fill","white")
-            .style("stroke-width",0)
-            .attr("opacity", .5)
+            .attr("class","annotation");
+            myG = myG.select("g");
+            
+            // semi-opaque background
+            myG.append("rect")
+            .style("fill","white").style("stroke-width",0).attr("opacity", .5)
             .attr("y", -60).attr("width", 150).attr("height", 60);
-            myG = myG.select("g")
-
+            
+            // half-border to accent the text
             myG.append("line")
             .attr("x1", 0).attr("y1","0").attr("x2","0").attr("y2","-60")
             myG.append("line")
             .attr("x1", 0).attr("y1","0").attr("x2","150").attr("y2","0")
+            
+            // multi-line text for the data.
+            // https://jarrettmeyer.com/2018/06/05/svg-multiline-text-with-tspan
             myText = myG.append("text")
             .attr("class","annotation")
-            .attr("font-family","sans-serif").attr("font-size",12)
             myText.append("tspan")
             .text(d => d[modelIdx].year + " " + d[modelIdx].make + " " + d[modelIdx].model)
             .attr("x", 0).attr("y",-50);
@@ -120,6 +128,7 @@
             .attr("x", 0).attr("dx",10).attr("dy",22)
             .text(d => "city: " + d[modelIdx].city + "mpg, highway: " + d[modelIdx].highway + "mpg");
         }
+        
         function drawHistogram(data) {
             // X axis: scale and draw:
             x = d3.scaleLinear()
