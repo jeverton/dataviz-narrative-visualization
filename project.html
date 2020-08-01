@@ -48,8 +48,8 @@
             data_by_year[i.toString()] = [];
         }
         // set the dimensions and margins of the graph
-        var margin = { top: 10, right: 30, bottom: 30, left: 40 },
-            width = 640 - margin.left - margin.right,
+        var margin = { top: 10, right: 160, bottom: 30, left: 40 },
+            width = 800 - margin.left - margin.right,
             height = 480 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
@@ -65,7 +65,6 @@
             var x = document.getElementById("s0")
             x.style.display = "block";
             // get the data
-            // const data = await d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/1_OneNum.csv")
             const data = await d3.csv("./vehicles_clean.csv", function (d) {
                 // console.log(+d.year);
                 curRow = {
@@ -82,59 +81,66 @@
             drawPlotX(0);
         }
 
-        function drawAnnotation(rectNumber, modelIdx){
+        function drawAnnotation(rectNumber, modelIdx) {
             // Each rect is wrapped in a <g/> with transform.  This makes it
             // easier to decorate that rect with an annotation.  Select the g.
             // Then select its rect.
             var myG = svg.select("#rects").selectAll("g")
-            .filter(function(d, i) {
-                // Pick out the <g> of the bar we want to decorate.
-                if (d == undefined || !Array.isArray(d) || d[0] == undefined) return false;
-                return d[0].city == rectNumber;
-            })
-            .raise();
+                .filter(function (d, i) {
+                    // Pick out the <g> of the bar we want to decorate.
+                    if (d == undefined || !Array.isArray(d) || d[0] == undefined) return false;
+                    return d[0].city == rectNumber;
+                })
+                .raise()
+                .each(function (d, i) {
+                    // If modelIdx was not specified, pick a random entry that matches.
+                    if (modelIdx == null) {
+                        modelIdx = Math.round(Math.random() * (d.length - 1));
+                    }
+                }
+                );
 
-            myG.select("rect").classed("selected",true);
+            myG.select("rect").classed("hover", true);
 
             // Draw the annotation with lines.
             myG.append("line")
-            .classed("annotation", true)
-            .attr("x1", d => (x(d.x1) - x(d.x0) - 1) / 2)
-            .attr("y1","0").attr("x2","30").attr("y2","-30");
+                .classed("annotation", true)
+                .attr("x1", d => (x(d.x1) - x(d.x0) - 1) / 2)
+                .attr("y1", "0").attr("x2", "30").attr("y2", "-30");
             myG.append("g")
-            .attr("transform", d => "translate(30, -30)")
-            .classed("annotation", true)
+                .attr("transform", d => "translate(30, -30)")
+                .classed("annotation", true);
             myG = myG.select("g");
-            
+
             // semi-opaque background
             myG.append("rect")
-            .style("fill","white").style("stroke-width",0).attr("opacity", .5)
-            .attr("y", -60).attr("width", 150).attr("height", 60);
-            
+                .style("fill", "white").style("stroke-width", 0).attr("opacity", .5)
+                .attr("y", -60).attr("width", 150).attr("height", 60);
+
             // half-border to accent the text
             myG.append("line")
-            .attr("x1", 0).attr("y1","0").attr("x2","0").attr("y2","-60")
+                .attr("x1", 0).attr("y1", "0").attr("x2", "0").attr("y2", "-60");
             myG.append("line")
-            .attr("x1", 0).attr("y1","0").attr("x2","150").attr("y2","0")
-            
+                .attr("x1", 0).attr("y1", "0").attr("x2", "150").attr("y2", "0");
+
             // multi-line text for the data.
             // https://jarrettmeyer.com/2018/06/05/svg-multiline-text-with-tspan
             myText = myG.append("text")
-            .classed("annotation", true)
+                .classed("annotation", true)
             myText.append("tspan")
-            .text(d => d[modelIdx].year + " " + d[modelIdx].make + " " + d[modelIdx].model)
-            .attr("x", 0).attr("y",-50);
+                .text(d => d[modelIdx].year + " " + d[modelIdx].make + " " + d[modelIdx].model)
+                .attr("x", 0).attr("y", -50);
             myText.append("tspan")
-            .attr("x", 0).attr("dx",10).attr("dy",22)
-            .text(d => d[modelIdx].trany);
+                .attr("x", 0).attr("dx", 10).attr("dy", 22)
+                .text(d => d[modelIdx].trany);
             myText.append("tspan")
-            .attr("x", 0).attr("dx",10).attr("dy",22)
-            .text(d => "city: " + d[modelIdx].city + "mpg, highway: " + d[modelIdx].highway + "mpg");
+                .attr("x", 0).attr("dx", 10).attr("dy", 22)
+                .text(d => "city: " + d[modelIdx].city + "mpg, highway: " + d[modelIdx].highway + "mpg");
         }
 
         function clearAnnotations() {
             svg.selectAll(".annotation").remove();
-            svg.selectAll(".selected").classed("selected", false);
+            svg.selectAll(".hover").classed("hover", false);
         }
 
         function drawHistogram(data, interactive) {
@@ -165,7 +171,7 @@
             // append the bar rectangles to the svg element
             svg.append("g")
                 .attr("id", "rects")
-            .selectAll("rect")
+                .selectAll("rect")
                 .data(bins)
                 .enter()
                 .append("g")
@@ -173,20 +179,24 @@
                 .append("rect")
                 .on("mouseover", function (d, i) {
                     if (interactive) {
-                        drawAnnotation(15, 3);
+                        drawAnnotation(d.x0);
                     }
                 })
-                .on("mouseout", function() {
-                    clearAnnotations();
+                .on("mouseout", function () {
+                    if (interactive) {
+                        clearAnnotations();
+                    }
                 })
                 .attr("x", 1)
-                // .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
-                .attr("height", function (d) { return height - y(d.length); })
+                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 3; })
+                .attr("height", function (d) { return height - y(d.length); });
+
+            // Add the year in large numbers
             svg.append("g")
                 .append("text")
-                .attr("x", width - margin.right - 100).attr("y",50)
-                .attr("font-family","sans-serif").attr("font-size",40)
+                .classed("charttitle", true)
+                .attr("x", width - 130).attr("y", 50)
+                // .attr("font-family", "sans-serif").attr("font-size", 60)
                 .text(data[0].year);
         }
 
@@ -198,7 +208,7 @@
                     drawAnnotation(9, 5);
                     break;
                 case 1:
-                drawHistogram(data_by_year["2005"]);
+                    drawHistogram(data_by_year["2005"]);
                     drawAnnotation(23, 1);
                     drawAnnotation(9, 5);
                     break;
