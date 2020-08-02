@@ -1,6 +1,6 @@
 <html>
 <script src='https://d3js.org/d3.v5.min.js'></script>
-<!-- <script src="https://unpkg.com/d3-simple-slider"></script> -->
+<script src="https://unpkg.com/d3-simple-slider"></script>
 
 <head>
     <title>Narrative Visualization Project</title>
@@ -13,7 +13,7 @@
     <!-- Header -->
     <div class="header">
         <h1>Automobile Fuel Efficiency</h1>
-        <p>Guzzling less over time</p>
+        <p>How has it improved over years?</p>
     </div>
     <!-- Navigation -->
     <div class="navbar">
@@ -35,13 +35,15 @@
             <P>Have a look at other years, and see how certain manufacturers' curves compare.
             </P>
         </div>
-        <!-- Plots -->
-        <div class="main" id="my_dataviz">
-            <!-- <input type="range" name="mySlider" id=mySlider min="2" max="40" value="10"> -->
+        <!-- Plot -->
+        <div class="main">
+            <div id="my_dataviz"></div>
+            <div id="slider-step"></div>
         </div>
     </div>
     <script>
         var scene = 0;
+        var interactiveYear = 2020;
         const numScenes = 3;
         var data_by_year = {};
         for (i = 1984; i <= 2021; i++) {
@@ -78,6 +80,7 @@
                 data_by_year[d.year].push(curRow);
                 return curRow;
             });
+            drawSlider();
             drawPlotX(0);
         }
 
@@ -196,24 +199,57 @@
                 .append("text")
                 .classed("charttitle", true)
                 .attr("x", width - 130).attr("y", 50)
-                // .attr("font-family", "sans-serif").attr("font-size", 60)
                 .text(data[0].year);
+        }
+
+        function drawSlider() {
+            // Step
+            var sliderStep = d3
+                .sliderBottom()
+                .min(1984)
+                .max(2021)
+                .width(300)
+                .tickFormat(d3.format(''))
+                .ticks(5)
+                .step(1)
+                .default(2021)
+                .on('onchange', val => {
+                    // d3.select('.charttitle').text(d3.format('')(val));
+                    interactiveYear = val;
+                    svg.html("");
+                    drawHistogram(data_by_year[interactiveYear.toString()], true);
+                });
+
+            var gStep = d3
+                .select('div#slider-step')
+                .append('svg')
+                .attr('width', 500)
+                .attr('height', 100)
+                .append('g')
+                .attr('transform', 'translate(30,30)');
+
+            gStep.call(sliderStep);
+
+            d3.select('p#value-step').text(d3.format('')(sliderStep.value()));
         }
 
         function drawPlotX(scene) {
             switch (scene) {
                 case 0:
+                    hideSlider(false);
                     drawHistogram(data_by_year["1985"]);
                     drawAnnotation(23, 1);
                     drawAnnotation(9, 5);
                     break;
                 case 1:
+                    hideSlider(false);
                     drawHistogram(data_by_year["2005"]);
                     drawAnnotation(23, 1);
                     drawAnnotation(9, 5);
                     break;
                 case 2:
-                    drawHistogram(data_by_year["2020"], true);
+                    showSlider(true);
+                    drawHistogram(data_by_year[interactiveYear.toString()], true);
                     break;
             }
         }
@@ -241,7 +277,16 @@
             drawPlotX(scene)
             console.log("Scene " + scene + ".");
         }
-    </script>
+
+        function showSlider() {
+            d3.select('div#slider-step')
+            .style("display","block");
+        }
+        function hideSlider() {
+            d3.select('div#slider-step')
+            .style("display","none");
+        }
+</script>
 </body>
 
 </html>
