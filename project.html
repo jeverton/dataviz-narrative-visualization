@@ -91,12 +91,9 @@
             var barTop = 0;
             var barXCenter = 0;
             var sampleCar;
-            // Each rect is wrapped in a <g/> with transform.  This makes it
-            // easier to decorate that rect with an annotation.  Select the g.
-            // Then select its rect.
-            var myG = svg.select("#rects").selectAll("g")
+            var myG = svg.select("#rects").selectAll("rect")
                 .filter(function (d, i) {
-                    // Pick out the <g> of the bar we want to decorate.
+                    // Pick out the rect of the bar we want to decorate.
                     if (d == undefined || !Array.isArray(d) || d[0] == undefined) return false;
                     return d[0].city == rectNumber;
                 })
@@ -105,7 +102,7 @@
                     if (modelIdx == null) {
                         modelIdx = Math.round(Math.random() * (d.length - 1));
                     }
-                    // Here, I save off important data from the context.
+                    // Here, I save off important data from the context of this bar.
                     // Where I want to use it, this context will not be available.
                     barXCenter = (x(d.x1) + x(d.x0)) / 2;
                     barTop = y(d.length);
@@ -114,14 +111,14 @@
 
             myG.select("rect").classed("hover", true);
 
-            // I tried adding this into a <g> that wrapped the rect for convenience.
+            // I tried adding the annotation into a <g> that wrapped the rect for convenience.
             // That made the transforms simpler.  However, it also made annotations
             // difficult to put "on top", because in HTML, that's done by making it
             // last in its parent tag.  That means I had to change the order of these
             // groups.  Changing the order of the <g> wrappers made the animations
             // look very strange.  So now, I capture all I need from the context of the
             // desired rectangle, and then add the geometry to the end of the root <g>
-                
+
             // Draw the annotation with lines.
             svg.append("line")
                 .classed("annotation", true)
@@ -194,10 +191,8 @@
                 .selectAll("rect")
                 .data(bins)
                 .enter()
-                .append("g")
-                .classed("bargroup", true)
-                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(0) + ")"; })
                 .append("rect")
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(0) + ")"; })
                 .on("mouseover", function (d, i) {
                     if (interactive) {
                         drawAnnotation(d.x0);
@@ -224,11 +219,10 @@
             var data = data_by_year[year.toString()];
             bins = histogram(data)
 
-            svg.selectAll(".bargroup")
+            svg.select("#rects").selectAll("rect")
                 .data(bins)
                 .transition().duration(150)
                 .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-                .select("rect")
                 .attr("height", function (d) { return height - y(d.length); });
 
         }
