@@ -24,15 +24,15 @@
     <div class="row">
         <!-- Narrative -->
         <div class="side" id="s0">
-            <P>Automobiles used to be much less efficient than they are today.
+            <P>Any driver has a feel for fuel efficiency.  We would like to think that cars are being built to consume less fuel each year.  Have they?  This is a histogram of car models made in 1987, binned by "City MPG" with a couple examples called out.  Keep in mind that each bar represents the number of car models that year with the given city mileage.</P>A Buick Century had pretty bad city mileage in 1987: 16mpg.  Ferrari's cars have other priorities.</P>How do you think these models will do in 2005?
             </P>
         </div>
         <div class="side" id="s1">
-            <P>Look at how this curve shifts over a couple decades.
+            <P>There wasn't that much shift in the curve, jumping 18 years ahead, was there?  There may be just a few models shifting up in the 30-50 range "tail."</P>2005 was the last year for the Buick Century.  It only increased its city mileage by 2mpg!  Ferrari still has other priorities.  That may never change.</P>Does this sad trend continue to the present, 15 years later?
             </P>
         </div>
         <div class="side" id="s2">
-            <P>Have a look at other years, and see how certain manufacturers' curves compare.
+            <P>This time, the curve has shifted noticeably to the right, and the high-mpg tail has quite a few more contenders than before.  There are still low-mileage trucks, SUV's, and sports cars with between 8 and 15mpg, but the curve has shifted right.</P>You can use the year-slider to see this trend year-by-year.  Scrubbing around will help you see the trend over time.  Can you find the point where the curve started shifting right?  What trend can you think of that may have spurred on this move?</P>You can hover your mouse cursor over the bars to see random samples from each bin.  See if the samples back up your theory.
             </P>
         </div>
         <!-- Plot -->
@@ -226,7 +226,6 @@
 
             svg.select(".charttitle")
                 .text(year);
-
         }
 
         function drawSlider() {
@@ -264,15 +263,15 @@
                 case 0:
                     hideSlider();
                     interactive = false;
-                    setHistogramYear(1985);
-                    drawAnnotation(23, 1);
+                    setHistogramYear(1987);
+                    drawAnnotation(16, 17);
                     drawAnnotation(9, 5);
                     break;
                 case 1:
                     hideSlider();
                     interactive = false;
                     setHistogramYear(2005);
-                    drawAnnotation(23, 1);
+                    drawAnnotation(18, 23);
                     drawAnnotation(9, 5);
                     break;
                 case 2:
