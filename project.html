@@ -88,6 +88,9 @@
         }
 
         function drawAnnotation(rectNumber, modelIdx) {
+            var barTop = 0;
+            var barXCenter = 0;
+            var sampleCar;
             // Each rect is wrapped in a <g/> with transform.  This makes it
             // easier to decorate that rect with an annotation.  Select the g.
             // Then select its rect.
@@ -102,22 +105,32 @@
                     if (modelIdx == null) {
                         modelIdx = Math.round(Math.random() * (d.length - 1));
                     }
-                }
-                );
+                    // Here, I save off important data from the context.
+                    // Where I want to use it, this context will not be available.
+                    barXCenter = (x(d.x1) + x(d.x0)) / 2;
+                    barTop = y(d.length);
+                    sampleCar = d[modelIdx];
+                });
 
             myG.select("rect").classed("hover", true);
 
+            // I tried adding this into a <g> that wrapped the rect for convenience.
+            // That made the transforms simpler.  However, it also made annotations
+            // difficult to put "on top", because in HTML, that's done by making it
+            // last in its parent tag.  That means I had to change the order of these
+            // groups.  Changing the order of the <g> wrappers made the animations
+            // look very strange.  So now, I capture all I need from the context of the
+            // desired rectangle, and then add the geometry to the end of the root <g>
+                
             // Draw the annotation with lines.
-            myG.append("line")
+            svg.append("line")
                 .classed("annotation", true)
-                .attr("x1", d => (x(d.x1) - x(d.x0) - 1) / 2)
-                .attr("y1", "0").attr("x2", "30").attr("y2", "-30");
-            myG.append("g")
-                .attr("transform", d => "translate(30, -30)")
+                .attr("x1", d => barXCenter)
+                .attr("y1", barTop).attr("x2", (barXCenter + 30).toString()).attr("y2", (barTop - 30).toString());
+            myG = svg.append("g")
+                .attr("transform", d => "translate(" + (barXCenter + 30).toString() + "," + (barTop - 30).toString() + ")")
                 .classed("annotation", true)
-                .raise()
-                ;
-            myG = myG.select("g");
+                .raise();
 
             // semi-opaque background
             myG.append("rect")
@@ -135,14 +148,14 @@
             myText = myG.append("text")
                 .classed("annotation", true)
             myText.append("tspan")
-                .text(d => d[modelIdx].year + " " + d[modelIdx].make + " " + d[modelIdx].model)
+                .text(d => sampleCar.year + " " + sampleCar.make + " " + sampleCar.model)
                 .attr("x", 0).attr("y", -50);
             myText.append("tspan")
                 .attr("x", 0).attr("dx", 10).attr("dy", 22)
-                .text(d => d[modelIdx].trany);
+                .text(d => sampleCar.trany);
             myText.append("tspan")
                 .attr("x", 0).attr("dx", 10).attr("dy", 22)
-                .text(d => "city: " + d[modelIdx].city + "mpg, highway: " + d[modelIdx].highway + "mpg");
+                .text(d => "city: " + sampleCar.city + "mpg, highway: " + sampleCar.highway + "mpg");
         }
 
         function clearAnnotations() {
