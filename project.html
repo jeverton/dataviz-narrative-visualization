@@ -91,7 +91,7 @@
             var barTop = 0;
             var barXCenter = 0;
             var sampleCar;
-            var myG = svg.select("#rects").selectAll("rect")
+            var myRect = svg.select("#rects").selectAll("rect")
                 .filter(function (d, i) {
                     // Pick out the rect of the bar we want to decorate.
                     if (d == undefined || !Array.isArray(d) || d[0] == undefined) return false;
@@ -107,9 +107,8 @@
                     barXCenter = (x(d.x1) + x(d.x0)) / 2;
                     barTop = y(d.length);
                     sampleCar = d[modelIdx];
-                });
-
-            myG.select("rect").classed("hover", true);
+                })
+                .classed("hover", true);
 
             // I tried adding the annotation into a <g> that wrapped the rect for convenience.
             // That made the transforms simpler.  However, it also made annotations
@@ -120,14 +119,14 @@
             // desired rectangle, and then add the geometry to the end of the root <g>
 
             // Draw the annotation with lines.
-            svg.append("line")
-                .classed("annotation", true)
-                .attr("x1", d => barXCenter)
-                .attr("y1", barTop).attr("x2", (barXCenter + 30).toString()).attr("y2", (barTop - 30).toString());
-            myG = svg.append("g")
+            var myG = svg.append("g")
                 .attr("transform", d => "translate(" + (barXCenter + 30).toString() + "," + (barTop - 30).toString() + ")")
-                .classed("annotation", true)
-                .raise();
+                .classed("annotation", true);
+            
+            // Line that "points" to the bar.
+            myG.append("line")
+                .attr("x1", 0).attr("y1", 0)
+                .attr("x2", -30).attr("y2", 30);
 
             // semi-opaque background
             myG.append("rect")
@@ -224,6 +223,9 @@
                 .transition().duration(150)
                 .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
                 .attr("height", function (d) { return height - y(d.length); });
+
+            svg.select(".charttitle")
+                .text(year);
 
         }
 
