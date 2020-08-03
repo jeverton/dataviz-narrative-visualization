@@ -44,8 +44,11 @@
     <script>
         var scene = 0;
         var interactiveYear = 2020;
+        var interactive = false;
         const numScenes = 3;
         var data_by_year = {};
+        var histogram;
+
         for (i = 1984; i <= 2021; i++) {
             data_by_year[i.toString()] = [];
         }
@@ -68,7 +71,6 @@
             x.style.display = "block";
             // get the data
             const data = await d3.csv("./vehicles_clean.csv", function (d) {
-                // console.log(+d.year);
                 curRow = {
                     year: +d.year,
                     make: d.make,
@@ -81,6 +83,7 @@
                 return curRow;
             });
             drawSlider();
+            drawHistogram(data_by_year["1985"])
             drawPlotX(0);
         }
 
@@ -94,7 +97,6 @@
                     if (d == undefined || !Array.isArray(d) || d[0] == undefined) return false;
                     return d[0].city == rectNumber;
                 })
-                .raise()
                 .each(function (d, i) {
                     // If modelIdx was not specified, pick a random entry that matches.
                     if (modelIdx == null) {
@@ -112,7 +114,9 @@
                 .attr("y1", "0").attr("x2", "30").attr("y2", "-30");
             myG.append("g")
                 .attr("transform", d => "translate(30, -30)")
-                .classed("annotation", true);
+                .classed("annotation", true)
+                .raise()
+                ;
             myG = myG.select("g");
 
             // semi-opaque background
@@ -146,17 +150,17 @@
             svg.selectAll(".hover").classed("hover", false);
         }
 
-        function drawHistogram(data, interactive) {
+        function drawHistogram(data) {
             // X axis: scale and draw:
             x = d3.scaleLinear()
-                .domain([8, 60])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                .domain([8, 60])
                 .range([0, width]);
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x));
 
             // set the parameters for the histogram
-            var histogram = d3.histogram()
+            histogram = d3.histogram()
                 .value(function (d) { return d.city; })   // I need to give the vector of value
                 .domain(x.domain())  // then the domain of the graphic
                 .thresholds(x.ticks(70)); // then the numbers of bins
@@ -178,7 +182,8 @@
                 .data(bins)
                 .enter()
                 .append("g")
-                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                .classed("bargroup", true)
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(0) + ")"; })
                 .append("rect")
                 .on("mouseover", function (d, i) {
                     if (interactive) {
@@ -192,7 +197,7 @@
                 })
                 .attr("x", 1)
                 .attr("width", function (d) { return x(d.x1) - x(d.x0) - 3; })
-                .attr("height", function (d) { return height - y(d.length); });
+                .attr("height", function (d) { return height - y(0); });
 
             // Add the year in large numbers
             svg.append("g")
@@ -200,6 +205,19 @@
                 .classed("charttitle", true)
                 .attr("x", width - 130).attr("y", 50)
                 .text(data[0].year);
+        }
+
+        function setHistogramYear(year) {
+            var data = data_by_year[year.toString()];
+            bins = histogram(data)
+
+            svg.selectAll(".bargroup")
+                .data(bins)
+                .transition().duration(150)
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                .select("rect")
+                .attr("height", function (d) { return height - y(d.length); });
+
         }
 
         function drawSlider() {
@@ -214,10 +232,8 @@
                 .step(1)
                 .default(2021)
                 .on('onchange', val => {
-                    // d3.select('.charttitle').text(d3.format('')(val));
                     interactiveYear = val;
-                    svg.html("");
-                    drawHistogram(data_by_year[interactiveYear.toString()], true);
+                    setHistogramYear(interactiveYear);
                 });
 
             var gStep = d3
@@ -234,22 +250,26 @@
         }
 
         function drawPlotX(scene) {
+            clearAnnotations();
             switch (scene) {
                 case 0:
-                    hideSlider(false);
-                    drawHistogram(data_by_year["1985"]);
+                    hideSlider();
+                    interactive = false;
+                    setHistogramYear(1985);
                     drawAnnotation(23, 1);
                     drawAnnotation(9, 5);
                     break;
                 case 1:
-                    hideSlider(false);
-                    drawHistogram(data_by_year["2005"]);
+                    hideSlider();
+                    interactive = false;
+                    setHistogramYear(2005);
                     drawAnnotation(23, 1);
                     drawAnnotation(9, 5);
                     break;
                 case 2:
-                    showSlider(true);
-                    drawHistogram(data_by_year[interactiveYear.toString()], true);
+                    showSlider();
+                    interactive = true;
+                    setHistogramYear(2020);
                     break;
             }
         }
@@ -262,7 +282,6 @@
         }
         function next(b) {
             //https://www.tutorialsteacher.com/d3js/dom-manipulation-using-d3js
-            svg.html("")
             changeScene(scene + 1)
             b.disabled = scene >= (numScenes - 1);
             document.getElementById("previousButton").disabled = false;
@@ -270,7 +289,6 @@
             console.log("Scene " + scene + ".");
         }
         function previous(b) {
-            svg.html("")
             changeScene(scene - 1)
             b.disabled = scene <= 0
             document.getElementById("nextButton").disabled = false;
@@ -280,13 +298,13 @@
 
         function showSlider() {
             d3.select('div#slider-step')
-            .style("display","block");
+                .style("display", "block");
         }
         function hideSlider() {
             d3.select('div#slider-step')
-            .style("display","none");
+                .style("display", "none");
         }
-</script>
+    </script>
 </body>
 
 </html>
